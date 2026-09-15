@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model utilisateurs {
+  id              String @id @default(uuid()) @map("_id")
+  nom             String
+  email           String @unique
+  motDePasse      String
+  dateCreation    DateTime @default(now())
+  refreshToken    String?
+
+  livesEmprunts   emprunts[]
+  notifications   notifications[]
+
+}
+
+
+enum statutEmprunt {
+  EN_ATTENTE
+  EN_COURS
+  TERMINE
+}
+
+
+model emprunts {
+  id              String @id @default(uuid()) @map("_id")
+  dateEmprunt     DateTime @default(now())
+  dateRetour      DateTime?
+  statut          statutEmprunt @default(EN_ATTENTE)
+
+  userId          String
+  user            utilisateurs @relation(fields: [userId], references: [id], onDelete:Cascade)
+
+  livreId         String
+  livre           livres @relation(fields: [livreId], references: [id], onDelete:Cascade)
+
+}
+
+
+
+model livres {
+  id              String @id @default(uuid()) @map("_id")
+  titre           String
+  auteur          String
+  description     String
+  annePublication DateTime @default(now())
+  ISBN            String @unique
+  disponible      Boolean @default(true)
+
+  livesEmprunts   emprunts[]
+  notifications   notifications[]
+
+}
+
+
+
+model notifications {
+  id              String @id @default(uuid()) @map("_id")
+  message         String
+
+  userId          String
+  user            utilisateurs @relation(fields: [userId], references: [id], onDelete:Cascade)
+
+  livreId         String
+  livre           livres @relation(fields: [livreId], references: [id], onDelete:Cascade)
+}
