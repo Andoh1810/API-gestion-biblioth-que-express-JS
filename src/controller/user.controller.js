@@ -3,6 +3,8 @@ import prisma from "../lib/prisma.js";
 import jwt from 'jsonwebtoken'
 import {v4 as uuidv4} from 'uuid'
 import bcrypt from 'bcrypt'
+import emailService from "../services/email.service.js";
+import qrcode from "qrcode"
 
 //GENERATION DE L'ACCESS TOKEN
 
@@ -58,6 +60,12 @@ const userController = {
                     motDePasse: haspassword
                 }
             })
+
+            //Creation du qrcode
+
+            const imageQr = await qrcode.toBuffer(`NOM: ${newUser.nom}, EMAIL: ${newUser.email}`)
+
+            emailService.envoieQrcode(email,"Vos inforamtions","Connexion réuissie, scannez pour voir vos infos",`<img src="cid:qrcode" alt='image'/>`,imageQr)
 
             return res.status(httpCode.CREATED).json({message:"utilisateur créé avec succès!", newUser})
 
@@ -176,7 +184,7 @@ const userController = {
             if(!user){
                 return res.status(httpCode.NOT_FOUND).json({message: "Utilisateur introuvable!"})
             }
-
+ 
             await prisma.utilisateurs.delete({where: {id:iduser}})
 
             return res.status(httpCode.OK).json({message: "Utilisateur supprimé avec succès!", user})

@@ -40,6 +40,7 @@ model emprunts {
   dateEmprunt     DateTime @default(now())
   dateRetour      DateTime?
   statut          statutEmprunt @default(EN_ATTENTE)
+  rappel          Boolean  @default(false)
 
   userId          String
   user            utilisateurs @relation(fields: [userId], references: [id], onDelete:Cascade)
@@ -66,10 +67,16 @@ model livres {
 }
 
 
+enum statutNotif {
+  LU
+  NON_LU
+}
+
 
 model notifications {
   id              String @id @default(uuid()) @map("_id")
   message         String
+  statut          statutNotif
 
   userId          String
   user            utilisateurs @relation(fields: [userId], references: [id], onDelete:Cascade)
